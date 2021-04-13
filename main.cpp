@@ -35,7 +35,15 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	std::string indexCountCommand = "./scripts/parse_youtube_page.js \"" + std::string(argv[1]) + "\"";
+	std::string playlistURL = std::string(argv[1]);
+
+	std::string indexCountCommand = "./scripts/parse_youtube_page.js \"" + playlistURL + "\"";
 	
-	std::cout << getCommandOutput(indexCountCommand.c_str()) << std::endl;
+	int numberOfVideos = std::stoi(getCommandOutput(indexCountCommand.c_str()));
+
+	for(int i = 0; i < numberOfVideos; i++)
+	{
+		std::string currentCommand = "./scripts/return_youtube_details.js \"" + playlistURL + "\" " + std::to_string(i);
+		std::cout << getCommandOutput(currentCommand.c_str()) << std::endl;
+	}
 }
