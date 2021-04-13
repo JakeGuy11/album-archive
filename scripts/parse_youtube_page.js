@@ -18,10 +18,9 @@ var rawPageDOM = getSourceAsDOM(process.argv[2]);
 var desiredJSONPartOne = rawPageDOM.split("var ytInitialData = ")[1];
 var desiredJSON = desiredJSONPartOne.split(";</script>")[0];
 
-//This is the giant JSON that has all the info we need
-// console.log(desiredJSON);
-
 var entireJSON = JSON.parse(desiredJSON);
+var playlist_title = entireJSON.metadata.playlistMetadataRenderer.albumName;
 var neededEntries = entireJSON.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].playlistVideoListRenderer.contents;
+var playlist_author = neededEntries[0].playlistVideoRenderer.shortBylineText.runs[0].text;
 
-console.log(neededEntries.length);
+console.log(neededEntries.length + ";;" + playlist_title + ";;" + playlist_author);
