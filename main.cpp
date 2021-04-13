@@ -17,7 +17,7 @@ std::vector<std::string> splitIntoStrings(std::string inputString, std::string d
 	for (int i = 0; i < expectedOccurences; i++)
 	{
 		returnVector.push_back(inputString.substr(0, inputString.find(delimeter)));
-		inputString.erase(0, inputString.find(delimeter) + inputString.length());
+		inputString.erase(0, inputString.find(delimeter) + delimeter.length());
 	}
 	return returnVector;
 }
@@ -51,24 +51,21 @@ int main(int argc, char **argv)
 
 	std::string indexCountCommand = "./scripts/parse_youtube_page.js \"" + playlistURL + "\"";
 	
-	int numberOfVideos = std::stoi(getCommandOutput(indexCountCommand.c_str()));
+	std::string firstCommandOutput = getCommandOutput(indexCountCommand.c_str());
+	std::vector<std::string> firstCommandOutputVector = splitIntoStrings(firstCommandOutput, ";;", 3);
+	int numberOfVideos = std::stoi(firstCommandOutputVector[0]);
 
 	for(int i = 0; i < numberOfVideos; i++)
 	{
 		std::string currentCommand = "./scripts/return_youtube_details.js \"" + playlistURL + "\" " + std::to_string(i);
 		std::string commandOutput = getCommandOutput(currentCommand.c_str());
 
-		std::vector<std::string> commandOutputVector = splitIntoStrings(commandOutput, ";;", 3);
+		std::vector<std::string> commandOutputVector = splitIntoStrings(commandOutput, ";;", 2);
 
-		std::string videoId = commandOutput.substr(0, commandOutput.find(";;"));
-		commandOutput.erase(0, commandOutput.find(";;") + 2);
-		std::string videoTitle = commandOutput.substr(0, commandOutput.find(";;"));
-		commandOutput.erase(0, commandOutput.find(";;") + 2);
-		std::string videoArtist = commandOutput.substr(0, commandOutput.find(";;"));
-
-		std::cout << "\nVideo ID: " << videoId
-			  << "\nVideo Title: " << videoTitle
-			  << "\nVideo Artist:" << videoArtist
+		std::cout << "\nVideo ID: " << commandOutputVector[0]
+			  << "\nVideo Title: " << commandOutputVector[1]
+			  << "\nVideo Album: " << firstCommandOutputVector[1]
+			  << "\nVideo Artist: " << firstCommandOutputVector[2]
 			  << std::endl;
 	}
 }

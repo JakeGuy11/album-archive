@@ -26,5 +26,5 @@ var videoID = baseEntry.videoId;
 var videoTitle = baseEntry.title.runs[0].text;
 var videoArtist = baseEntry.shortBylineText.runs[0].text;
 
-console.log(videoID + ";;" + videoTitle + ";;" + videoArtist);
+console.log(videoID + ";;" + videoTitle);
 
