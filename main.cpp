@@ -6,9 +6,26 @@
 // That will return a whole bunch of details, all which will be used in the tagging of the files
 // From there, it will pass all of that information to extract_audio.py, which will use ffmpeg and it's metadata flag to download the audio and tag it.
 #include <iostream>
+#include <array>
+#include <memory>
+#include <algorithm>
 
+std::string getCommandOutput(const char* cmd)
+{
+	std::array<char, 128> buffer;
+	std::string result;
+	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+	if (!pipe) {
+		throw std::runtime_error("popen() failed!");
+	}
+	while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+		result += buffer.data();
+	}
+	result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
+	return result;
+}
 
-int main(int argc, int **argv)
+int main(int argc, char **argv)
 {
 	if(argc < 2)
 	{
@@ -18,4 +35,7 @@ int main(int argc, int **argv)
 		return 1;
 	}
 
+	std::string indexCountCommand = "./scripts/parse_youtube_page.js \"" + std::string(argv[1]) + "\"";
+	
+	std::cout << getCommandOutput(indexCountCommand.c_str()) << std::endl;
 }
