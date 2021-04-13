@@ -8,7 +8,14 @@
 #include <iostream>
 
 
-int main()
+int main(int argc, int **argv)
 {
-	std::cout << "Starting Program..." << std::endl;
+	if(argc < 2)
+	{
+		std::cerr << "Usage: " << std::endl
+	          << argv[0] << " URL"
+		  << std::endl;
+		return 1;
+	}
+
 }
