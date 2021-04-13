@@ -9,6 +9,7 @@
 #include <array>
 #include <memory>
 #include <algorithm>
+#include <vector>
 
 std::string getCommandOutput(const char* cmd)
 {
@@ -44,6 +45,16 @@ int main(int argc, char **argv)
 	for(int i = 0; i < numberOfVideos; i++)
 	{
 		std::string currentCommand = "./scripts/return_youtube_details.js \"" + playlistURL + "\" " + std::to_string(i);
-		std::cout << getCommandOutput(currentCommand.c_str()) << std::endl;
+		std::string commandOutput = getCommandOutput(currentCommand.c_str());
+		std::string videoId = commandOutput.substr(0, commandOutput.find(";;"));
+		commandOutput.erase(0, commandOutput.find(";;") + 2);
+		std::string videoTitle = commandOutput.substr(0, commandOutput.find(";;"));
+		commandOutput.erase(0, commandOutput.find(";;") + 2);
+		std::string videoArtist = commandOutput.substr(0, commandOutput.find(";;"));
+
+		std::cout << "\nVideo ID: " << videoId
+			  << "\nVideo Title: " << videoTitle
+			  << "\nVideo Artist:" << videoArtist
+			  << std::endl;
 	}
 }
