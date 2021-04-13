@@ -11,6 +11,17 @@
 #include <algorithm>
 #include <vector>
 
+std::vector<std::string> splitIntoStrings(std::string inputString, std::string delimeter, int expectedOccurences)
+{
+	std::vector<std::string> returnVector;
+	for (int i = 0; i < expectedOccurences; i++)
+	{
+		returnVector.push_back(inputString.substr(0, inputString.find(delimeter)));
+		inputString.erase(0, inputString.find(delimeter) + inputString.length());
+	}
+	return returnVector;
+}
+
 std::string getCommandOutput(const char* cmd)
 {
 	std::array<char, 128> buffer;
@@ -46,6 +57,9 @@ int main(int argc, char **argv)
 	{
 		std::string currentCommand = "./scripts/return_youtube_details.js \"" + playlistURL + "\" " + std::to_string(i);
 		std::string commandOutput = getCommandOutput(currentCommand.c_str());
+
+		std::vector<std::string> commandOutputVector = splitIntoStrings(commandOutput, ";;", 3);
+
 		std::string videoId = commandOutput.substr(0, commandOutput.find(";;"));
 		commandOutput.erase(0, commandOutput.find(";;") + 2);
 		std::string videoTitle = commandOutput.substr(0, commandOutput.find(";;"));
