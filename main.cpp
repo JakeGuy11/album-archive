@@ -22,6 +22,16 @@ std::vector<std::string> splitIntoStrings(std::string inputString, std::string d
 	return returnVector;
 }
 
+std::string getPrompt(std::string prompt)
+{
+	std::string returnString = "";
+	std::cout << prompt << std::endl;
+	std::cout << ">>>";
+	//std::cin.ignore();
+	std::getline(std::cin, returnString, '\n');
+	return returnString;
+}
+
 std::string getCommandOutput(const char* cmd)
 {
 	std::array<char, 128> buffer;
@@ -55,23 +65,24 @@ int main(int argc, char **argv)
 	std::vector<std::string> firstCommandOutputVector = splitIntoStrings(firstCommandOutput, ";;", 3);
 	int numberOfVideos = std::stoi(firstCommandOutputVector[0]);
 	
-	std::string pathToSave = "";
-	std::cout << "Enter the absolute path that you would like to save the audio:" << std::endl;
-	std::cin >> pathToSave;
-
-	std::string albumYear = "";
-	std::cout << "Enter the year you would like to tag the music with:" << std::endl;
-	std::cin >> albumYear;
+	std::string pathToSave = "~/Music/" + getPrompt("Enter the path (relative to ~/Music/ where you would like to save the album");
+	std::string albumYear = getPrompt("Enter the album year");
+	std::string albumArtist = getPrompt("The current identified artist is " + firstCommandOutputVector[2] + ", would you like to change it? Leave blank for no, or enter its new name.");
+	if(albumArtist == "") albumArtist = firstCommandOutputVector[2];
 
 	for(int i = 0; i < numberOfVideos; i++)
 	{
+		std::cout << std::endl;
 		std::string currentCommand = "./scripts/return_youtube_details.js \"" + playlistURL + "\" " + std::to_string(i);
 		std::string commandOutput = getCommandOutput(currentCommand.c_str());
-
 		std::vector<std::string> commandOutputVector = splitIntoStrings(commandOutput, ";;", 2);
 		
-		std::string downloadCommand = "./scripts/extract_audio.py \"" + commandOutputVector[0] + "\" \"" + pathToSave + "\" \"" + commandOutputVector[1] + "\" \"" + firstCommandOutputVector[1] + "\" \"" + firstCommandOutputVector[2] + "\" \"" + albumYear + "\"";
+		std::string chosenTitle = getPrompt("The current video title is " + commandOutputVector[1] + ", would you like to change it? Leave blank for no, or enter its new name.");
+		if (chosenTitle == "") chosenTitle = commandOutputVector[1];
+		
+		std::string downloadCommand = "./scripts/extract_audio.py \"" + commandOutputVector[0] + "\" \"" + pathToSave + "\" \"" + chosenTitle + "\" \"" + firstCommandOutputVector[1] + "\" \"" + albumArtist + "\" \"" + albumYear + "\" " + std::to_string(i+1);
 
 		system(downloadCommand.c_str());
+		std::cout << "Finished downloading " << chosenTitle << std::endl;
 	}
 }
