@@ -54,6 +54,14 @@ int main(int argc, char **argv)
 	std::string firstCommandOutput = getCommandOutput(indexCountCommand.c_str());
 	std::vector<std::string> firstCommandOutputVector = splitIntoStrings(firstCommandOutput, ";;", 3);
 	int numberOfVideos = std::stoi(firstCommandOutputVector[0]);
+	
+	std::string pathToSave = "";
+	std::cout << "Enter the absolute path that you would like to save the audio:" << std::endl;
+	std::cin >> pathToSave;
+
+	std::string albumYear = "";
+	std::cout << "Enter the year you would like to tag the music with:" << std::endl;
+	std::cin >> albumYear;
 
 	for(int i = 0; i < numberOfVideos; i++)
 	{
@@ -61,11 +69,9 @@ int main(int argc, char **argv)
 		std::string commandOutput = getCommandOutput(currentCommand.c_str());
 
 		std::vector<std::string> commandOutputVector = splitIntoStrings(commandOutput, ";;", 2);
+		
+		std::string downloadCommand = "./scripts/extract_audio.py \"" + commandOutputVector[0] + "\" \"" + pathToSave + "\" \"" + commandOutputVector[1] + "\" \"" + firstCommandOutputVector[1] + "\" \"" + firstCommandOutputVector[2] + "\" \"" + albumYear + "\"";
 
-		std::cout << "\nVideo ID: " << commandOutputVector[0]
-			  << "\nVideo Title: " << commandOutputVector[1]
-			  << "\nVideo Album: " << firstCommandOutputVector[1]
-			  << "\nVideo Artist: " << firstCommandOutputVector[2]
-			  << std::endl;
+		system(downloadCommand.c_str());
 	}
 }

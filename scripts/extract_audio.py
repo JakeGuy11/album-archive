@@ -5,28 +5,27 @@ import sys
 import os
 import youtube_dl
 
-try:
-    requested_title = sys.argv[3] 
-    requested_path = sys.argv[2]
-    requested_album = sys.argv[4]
-    requested_artist = sys.argv[5]
-    requested_year = sys.argv[6]
+requested_title = sys.argv[3] 
+requested_path = sys.argv[2]
+requested_album = sys.argv[4]
+requested_artist = sys.argv[5]
+requested_year = sys.argv[6]
 
-    dl_opts = {
-        'quiet': True,
-        'format': 'bestaudio',
-        'outtmpl': requested_path + "currentitem"
-    }
+requested_url = "https://www.youtube.com/watch?v=" + sys.argv[1]
 
-    with youtube_dl.YoutubeDL(dl_opts) as ydl:
-        ydl.download([sys.argv[1]])
+dl_opts = {
+    'quiet': True,
+    'format': 'bestaudio',
+    'outtmpl': requested_path + "currentitem"
+}
 
-    metadata_commands = "-metadata title=\"title test\""
+with youtube_dl.YoutubeDL(dl_opts) as ydl:
+    ydl.download([requested_url])
 
-    ffmpeg_command = "ffmpeg -i " + requested_path + "currentitem -y -loglevel quiet -crf 0 " + metadata_commands + " " + requested_path + requested_title + ".wav"
+metadata_commands = "-metadata title=\"" + requested_title + "\" -metadata album=\"" + requested_album + "\" -metadata artist=\"" + requested_artist + "\" -metadata date=\"" + requested_year + "\""
 
-    os.system(ffmpeg_command)
-    os.system("rm " + requested_path + "currentitem")
-    print(0)
-except:
-    print(1)
+ffmpeg_command = "ffmpeg -i " + requested_path + "currentitem -y -loglevel quiet -crf 0 " + metadata_commands + " \"" + requested_path + "/" + requested_title + ".mp3\""
+
+os.system(ffmpeg_command)
+os.system("rm " + requested_path + "currentitem")
+
