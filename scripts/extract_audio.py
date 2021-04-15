@@ -27,7 +27,7 @@ metadata_commands = "-metadata title=\"" + requested_title + "\" -metadata album
 
 save_name = requested_path.replace(" ", "\ ").replace("(", "\(").replace(")", "\)").replace("'", "\\'").replace("\"", "\\\"") + "/" + requested_title.replace(" ", "\ ").replace("(", "\(").replace(")", "\)").replace("'", "\\'").replace("\"", "\\\"") + ".mp3"
 
-ffmpeg_command = "ffmpeg -i \"" + os.path.expanduser(requested_path) + "/currentitem\" -i \"" + os.path.expanduser(requested_path) + "/cover\" -map 0:0 -map 1:0 -loglevel quiet -y -id3v2_version 3 " + metadata_commands + " -metadata:s:v comment=\"Cover (front)\" " + os.path.expanduser(save_name)
+ffmpeg_command = "ffmpeg -i \"" + os.path.expanduser(requested_path) + "/currentitem\" -i \"" + os.path.expanduser(requested_path) + "/cover\" -map 0:0 -map 1:0 -q:a 0 -y -id3v2_version 3 " + metadata_commands + " -metadata:s:v comment=\"Cover (front)\" " + os.path.expanduser(save_name)
 
 os.system(ffmpeg_command)
 rm_command = "rm " + requested_path.replace(" ", "\ ").replace("(", "\(").replace(")", "\)").replace("'", "\\'").replace("\"", "\\\"") + "/currentitem"
