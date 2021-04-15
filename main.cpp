@@ -10,6 +10,19 @@
 #include <memory>
 #include <algorithm>
 #include <vector>
+#include <string>
+#include <cstring>
+
+std::string replaceString(std::string subject,const std::string& search,const std::string& replace)
+{
+	size_t pos = 0;
+	while ((pos = subject.find(search, pos)) != std::string::npos)
+	{
+		subject.replace(pos, search.length(), replace);
+		pos += replace.length();
+	}
+	return subject;
+}
 
 std::vector<std::string> splitIntoStrings(std::string inputString, std::string delimeter, int expectedOccurences)
 {
@@ -62,7 +75,7 @@ int main(int argc, char **argv)
 	std::string indexCountCommand = "./scripts/parse_youtube_page.js \"" + playlistURL + "\"";
 	
 	std::string firstCommandOutput = getCommandOutput(indexCountCommand.c_str());
-	std::vector<std::string> firstCommandOutputVector = splitIntoStrings(firstCommandOutput, ";;", 3);
+	std::vector<std::string> firstCommandOutputVector = splitIntoStrings(firstCommandOutput, ";;", 4);
 	int numberOfVideos = std::stoi(firstCommandOutputVector[0]);
 	
 	std::string pathToSave = "~/Music/" + getPrompt("Enter the path (relative to ~/Music/ where you would like to save the album");
@@ -71,7 +84,12 @@ int main(int argc, char **argv)
 	std::string albumArtist = getPrompt("The current identified artist is " + firstCommandOutputVector[2] + ", would you like to change it? Leave blank for no, or enter its new name.");
 	if(albumName == "") albumName = firstCommandOutputVector[1];
 	if(albumArtist == "") albumArtist = firstCommandOutputVector[2];
-
+	
+	//Download the image
+	std::string coverCommand = "curl \"" + firstCommandOutputVector[3] + "\" --create-dirs -o " + replaceString(pathToSave, " ", "\\ ") + "/cover";
+	std::cout << coverCommand << std::endl;
+	system(coverCommand.c_str());
+	
 	for(int i = 0; i < numberOfVideos; i++)
 	{
 		std::cout << std::endl;
@@ -83,8 +101,11 @@ int main(int argc, char **argv)
 		if (chosenTitle == "") chosenTitle = commandOutputVector[1];
 		
 		std::string downloadCommand = "./scripts/extract_audio.py \"" + commandOutputVector[0] + "\" \"" + pathToSave + "\" \"" + chosenTitle + "\" \"" + albumName + "\" \"" + albumArtist + "\" \"" + albumYear + "\" " + std::to_string(i+1);
-
+		std::cout << downloadCommand << std::endl;
 		system(downloadCommand.c_str());
 		std::cout << "Finished downloading " << chosenTitle << std::endl;
 	}
+
+	std::string removeCoverCommand = "rm " + replaceString(pathToSave, " ", "\\ ") + "/cover";
+	system(removeCoverCommand.c_str());
 }
