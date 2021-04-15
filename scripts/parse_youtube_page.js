@@ -20,7 +20,8 @@ var desiredJSON = desiredJSONPartOne.split(";</script>")[0];
 
 var entireJSON = JSON.parse(desiredJSON);
 var playlist_title = entireJSON.metadata.playlistMetadataRenderer.albumName;
+var thumbnail_url = entireJSON.microformat.microformatDataRenderer.thumbnail.thumbnails[1].url;
 var neededEntries = entireJSON.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].playlistVideoListRenderer.contents;
 var playlist_author = neededEntries[0].playlistVideoRenderer.shortBylineText.runs[0].text;
 
-console.log(neededEntries.length + ";;" + playlist_title + ";;" + playlist_author);
+console.log(neededEntries.length + ";;" + playlist_title + ";;" + playlist_author + ";;" + thumbnail_url);
