@@ -87,7 +87,6 @@ int main(int argc, char **argv)
 	
 	//Download the image
 	std::string coverCommand = "curl \"" + firstCommandOutputVector[3] + "\" --create-dirs -o " + replaceString(pathToSave, " ", "\\ ") + "/cover";
-	std::cout << coverCommand << std::endl;
 	system(coverCommand.c_str());
 	
 	for(int i = 0; i < numberOfVideos; i++)
@@ -101,7 +100,6 @@ int main(int argc, char **argv)
 		if (chosenTitle == "") chosenTitle = commandOutputVector[1];
 		
 		std::string downloadCommand = "./scripts/extract_audio.py \"" + commandOutputVector[0] + "\" \"" + pathToSave + "\" \"" + chosenTitle + "\" \"" + albumName + "\" \"" + albumArtist + "\" \"" + albumYear + "\" " + std::to_string(i+1);
-		std::cout << downloadCommand << std::endl;
 		system(downloadCommand.c_str());
 		std::cout << "Finished downloading " << chosenTitle << std::endl;
 	}

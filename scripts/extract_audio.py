@@ -15,8 +15,8 @@ requested_tracknum = sys.argv[7]
 requested_url = "https://www.youtube.com/watch?v=" + sys.argv[1]
 
 dl_opts = {
-    # 'quiet': True,
-    'format': 'bestaudio',
+    'quiet': True,
+    'format': 'bestaudio/best',
     'outtmpl': requested_path + "/currentitem"
 }
 
@@ -25,13 +25,11 @@ with youtube_dl.YoutubeDL(dl_opts) as ydl:
 
 metadata_commands = "-metadata title=\"" + requested_title + "\" -metadata album=\"" + requested_album + "\" -metadata artist=\"" + requested_artist + "\" -metadata date=\"" + requested_year + "\" -metadata track=\"" + requested_tracknum + "\""
 
-save_name = requested_path.replace(" ", "\ ").replace("(", "\(").replace(")", "\)") + "/" + requested_title.replace(" ", "\ ").replace("(", "\(").replace(")", "\)") + ".mp3"
+save_name = requested_path.replace(" ", "\ ").replace("(", "\(").replace(")", "\)").replace("'", "\\'").replace("\"", "\\\"") + "/" + requested_title.replace(" ", "\ ").replace("(", "\(").replace(")", "\)").replace("'", "\\'").replace("\"", "\\\"") + ".mp3"
 
-ffmpeg_command = "ffmpeg -i \"" + os.path.expanduser(requested_path) + "/currentitem\" -i \"" + os.path.expanduser(requested_path) + "/cover\" -map 0:0 -map 1:0 -y -id3v2_version 3 " + metadata_commands + " -metadata:s:v comment=\"Cover (front)\" " + os.path.expanduser(save_name)
-
-print(ffmpeg_command)
+ffmpeg_command = "ffmpeg -i \"" + os.path.expanduser(requested_path) + "/currentitem\" -i \"" + os.path.expanduser(requested_path) + "/cover\" -map 0:0 -map 1:0 -loglevel quiet -y -id3v2_version 3 " + metadata_commands + " -metadata:s:v comment=\"Cover (front)\" " + os.path.expanduser(save_name)
 
 os.system(ffmpeg_command)
-rm_command = "rm " + requested_path.replace(" ", "\ ") + "/currentitem"
+rm_command = "rm " + requested_path.replace(" ", "\ ").replace("(", "\(").replace(")", "\)").replace("'", "\\'").replace("\"", "\\\"") + "/currentitem"
 os.system(rm_command)
 
