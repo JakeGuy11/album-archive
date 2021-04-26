@@ -12,9 +12,12 @@
 #include <vector>
 #include <string>
 #include <cstring>
-//Here are some things we'll need globally
+// Here are some things we'll need globally
 bool customCover = false;
 std::string customCoverLocation = "";
+// Here is the intent: by default, it's to download the album. The user can pass flags that will change it
+std::string intent = "album";
+
 
 std::string replaceString(std::string subject,const std::string& search,const std::string& replace)
 {
@@ -43,7 +46,6 @@ std::string getPrompt(std::string prompt)
 	std::string returnString = "";
 	std::cout << prompt << std::endl;
 	std::cout << ">>>";
-	//std::cin.ignore();
 	std::getline(std::cin, returnString, '\n');
 	return returnString;
 }
@@ -80,45 +82,61 @@ int main(int argc, char **argv)
 			customCover = true;
 			customCoverLocation = std::string(argv[i+1]);
 		}
+		else if (std::string (argv[i]) == "-s" || std::string (argv[i]) == "--single")
+		{
+			intent = "single";
+			std::cout << "Mode set to single." << std::endl;
+		}
 	}
+	
 
-	std::string playlistURL = std::string(argv[argc-1]);
-
-	std::string indexCountCommand = "./scripts/parse_youtube_page.js \"" + playlistURL + "\"";
-	
-	std::string firstCommandOutput = getCommandOutput(indexCountCommand.c_str());
-	std::vector<std::string> firstCommandOutputVector = splitIntoStrings(firstCommandOutput, ";;", 4);
-	int numberOfVideos = std::stoi(firstCommandOutputVector[0]);
-	
-	std::string pathToSave = "~/Music/" + getPrompt("Enter the path (relative to ~/Music/ where you would like to save the album");
-	std::string albumYear = getPrompt("Enter the album year");
-	std::string albumName = getPrompt("The current identified album name is " + firstCommandOutputVector[1] + ", would you like to change it? Leave blank for no, or enter its new name.");
-	std::string albumArtist = getPrompt("The current identified artist is " + firstCommandOutputVector[2] + ", would you like to change it? Leave blank for no, or enter its new name.");
-	if(albumName == "") albumName = firstCommandOutputVector[1];
-	if(albumArtist == "") albumArtist = firstCommandOutputVector[2];
-	
-	//Download the image
-	std::string coverCommand = "";
-	if(customCover) coverCommand = "mkdir -p " + replaceString(pathToSave, " ", "\\ ") + " 2> /dev/null; cp " + replaceString(customCoverLocation, " ", "\\ ") + " " + replaceString(pathToSave, " ", "\\ ") + "/cover";
-	else coverCommand = "curl \"" + firstCommandOutputVector[3] + "\" --create-dirs -o " + replaceString(pathToSave, " ", "\\ ") + "/cover 2> /dev/null";
-
-	system(coverCommand.c_str());
-	
-	for(int i = 0; i < numberOfVideos; i++)
+	if (intent == "album")
 	{
-		std::cout << std::endl;
-		std::string currentCommand = "./scripts/return_youtube_details.js \"" + playlistURL + "\" " + std::to_string(i);
-		std::string commandOutput = getCommandOutput(currentCommand.c_str());
-		std::vector<std::string> commandOutputVector = splitIntoStrings(commandOutput, ";;", 2);
-		
-		std::string chosenTitle = getPrompt("The current video title is " + commandOutputVector[1] + ", would you like to change it? Leave blank for no, or enter its new name.");
-		if (chosenTitle == "") chosenTitle = commandOutputVector[1];
-		
-		std::string downloadCommand = "./scripts/extract_audio.py \"" + commandOutputVector[0] + "\" \"" + pathToSave + "\" \"" + chosenTitle + "\" \"" + albumName + "\" \"" + albumArtist + "\" \"" + albumYear + "\" " + std::to_string(i+1);
-		system(downloadCommand.c_str());
-		std::cout << "Finished downloading " << chosenTitle << std::endl;
-	}
+		std::string playlistURL = std::string(argv[argc-1]);
 
-	std::string removeCoverCommand = "rm " + replaceString(pathToSave, " ", "\\ ") + "/cover";
-	system(removeCoverCommand.c_str());
+		std::string indexCountCommand = "./scripts/parse_youtube_playlist.js \"" + playlistURL + "\"";
+		
+		std::string firstCommandOutput = getCommandOutput(indexCountCommand.c_str());
+		std::vector<std::string> firstCommandOutputVector = splitIntoStrings(firstCommandOutput, ";;", 4);
+		int numberOfVideos = std::stoi(firstCommandOutputVector[0]);
+		
+		std::string pathToSave = "~/Music/" + getPrompt("Enter the path (relative to ~/Music/ where you would like to save the album");
+		std::string albumYear = getPrompt("Enter the album year");
+		std::string albumName = getPrompt("The current identified album name is " + firstCommandOutputVector[1] + ", would you like to change it? Leave blank for no, or enter its new name.");
+		std::string albumArtist = getPrompt("The current identified artist is " + firstCommandOutputVector[2] + ", would you like to change it? Leave blank for no, or enter its new name.");
+		if(albumName == "") albumName = firstCommandOutputVector[1];
+		if(albumArtist == "") albumArtist = firstCommandOutputVector[2];
+		
+		//Download the image
+		std::string coverCommand = "";
+		if(customCover) coverCommand = "mkdir -p " + replaceString(pathToSave, " ", "\\ ") + " 2> /dev/null; cp " + replaceString(customCoverLocation, " ", "\\ ") + " " + replaceString(pathToSave, " ", "\\ ") + "/cover";
+		else coverCommand = "curl \"" + firstCommandOutputVector[3] + "\" --create-dirs -o " + replaceString(pathToSave, " ", "\\ ") + "/cover 2> /dev/null";
+
+		system(coverCommand.c_str());
+		
+		for(int i = 0; i < numberOfVideos; i++)
+		{
+			std::cout << std::endl;
+			std::string currentCommand = "./scripts/return__playlist_details.js \"" + playlistURL + "\" " + std::to_string(i);
+			std::string commandOutput = getCommandOutput(currentCommand.c_str());
+			std::vector<std::string> commandOutputVector = splitIntoStrings(commandOutput, ";;", 2);
+			
+			std::string chosenTitle = getPrompt("The current video title is " + commandOutputVector[1] + ", would you like to change it? Leave blank for no, or enter its new name.");
+			if (chosenTitle == "") chosenTitle = commandOutputVector[1];
+			
+			std::string downloadCommand = "./scripts/extract_audio.py \"" + commandOutputVector[0] + "\" \"" + pathToSave + "\" \"" + chosenTitle + "\" \"" + albumName + "\" \"" + albumArtist + "\" \"" + albumYear + "\" " + std::to_string(i+1);
+			system(downloadCommand.c_str());
+			std::cout << "Finished downloading " << chosenTitle << std::endl;
+		}
+
+		std::string removeCoverCommand = "rm " + replaceString(pathToSave, " ", "\\ ") + "/cover";	
+		system(removeCoverCommand.c_str());
+		return 0;
+	}
+	
+	if (intent == "single")
+	{
+		// Do all the single stuff here
+	}
 }
+
