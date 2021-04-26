@@ -12,6 +12,9 @@
 #include <vector>
 #include <string>
 #include <cstring>
+//Here are some things we'll need globally
+bool customCover = false;
+std::string customCoverLocation = "";
 
 std::string replaceString(std::string subject,const std::string& search,const std::string& replace)
 {
@@ -70,7 +73,16 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	std::string playlistURL = std::string(argv[1]);
+	for(int i = 1; i < argc; ++i)
+	{
+		if (std::string(argv[i]) == "-c" || std::string(argv[i]) == "--cover")
+		{
+			customCover = true;
+			customCoverLocation = std::string(argv[i+1]);
+		}
+	}
+
+	std::string playlistURL = std::string(argv[argc-1]);
 
 	std::string indexCountCommand = "./scripts/parse_youtube_page.js \"" + playlistURL + "\"";
 	
@@ -86,7 +98,10 @@ int main(int argc, char **argv)
 	if(albumArtist == "") albumArtist = firstCommandOutputVector[2];
 	
 	//Download the image
-	std::string coverCommand = "curl \"" + firstCommandOutputVector[3] + "\" --create-dirs -o " + replaceString(pathToSave, " ", "\\ ") + "/cover";
+	std::string coverCommand = "";
+	if(customCover) coverCommand = "mkdir -p " + replaceString(pathToSave, " ", "\\ ") + " 2> /dev/null; cp " + replaceString(customCoverLocation, " ", "\\ ") + " " + replaceString(pathToSave, " ", "\\ ") + "/cover";
+	else coverCommand = "curl \"" + firstCommandOutputVector[3] + "\" --create-dirs -o " + replaceString(pathToSave, " ", "\\ ") + "/cover 2> /dev/null";
+
 	system(coverCommand.c_str());
 	
 	for(int i = 0; i < numberOfVideos; i++)
