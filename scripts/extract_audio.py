@@ -12,7 +12,7 @@ requested_artist = sys.argv[5]
 requested_year = sys.argv[6]
 requested_tracknum = sys.argv[7]
 
-requested_url = "https://www.youtube.com/watch?v=" + sys.argv[1]
+requested_url = sys.argv[1]
 
 dl_opts = {
     'quiet': True,

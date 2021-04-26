@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 	if(argc < 2)
 	{
 		std::cerr << "Usage: " << std::endl
-	          << argv[0] << " URL"
+	          << argv[0] << "[flags] URL"
 		  << std::endl;
 		return 1;
 	}
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 		for(int i = 0; i < numberOfVideos; i++)
 		{
 			std::cout << std::endl;
-			std::string currentCommand = "./scripts/return__playlist_details.js \"" + playlistURL + "\" " + std::to_string(i);
+			std::string currentCommand = "./scripts/return_playlist_details.js \"" + playlistURL + "\" " + std::to_string(i);
 			std::string commandOutput = getCommandOutput(currentCommand.c_str());
 			std::vector<std::string> commandOutputVector = splitIntoStrings(commandOutput, ";;", 2);
 			
@@ -136,7 +136,40 @@ int main(int argc, char **argv)
 	
 	if (intent == "single")
 	{
-		// Do all the single stuff here
+		std::string videoURL = std::string(argv[argc-1]);
+
+		// Get all the details of the single here
+		std::string singleTitle = getPrompt("Enter the title of the song");
+		std::string singlePath = "~/Music/" + getPrompt("Enter the path, relative to ~/Music, you would like to save the single");
+		std::string singleName = getPrompt("Enter the name of the single if it is not the same as the song title. If it is, leave this field blank");
+		if (singleName == "") singleName = singleTitle;
+		std::string singleArtist = getPrompt("Enter the artist of the single");
+		std::string singleYear = getPrompt("Enter the year of the single");
+		std::string singleIndex = getPrompt("Enter the index of this song in the single if it is not the only song, otherwise leave it blank");
+
+		// Make the directory if it does not exist
+		std::string mkdirCommand = "mkdir -p " + replaceString (singlePath, " ", "\\ ");
+		system(mkdirCommand.c_str());
+
+		// Download the cover here
+		std::string coverURL;
+		std::string coverCommand;
+		if (!customCover) coverURL = getPrompt ("Enter the url of the cover image");
+		if (customCover) coverCommand = "cp " + replaceString(customCoverLocation, " ", "\\ ") + " " + replaceString(singlePath, " ", "\\ ") + "/cover";
+		else coverCommand = "curl \"" + coverURL + "\" --create-dirs -o " + replaceString(singlePath, " ", "\\ ") + "/cover";
+		system(coverCommand.c_str());
+	
+		//Generate and execute the extraction command
+		std::string extractArguments = "\"" + videoURL + "\" \"" + singlePath + "\" \"" + singleTitle + "\" \"" + singleName + "\" \"" + singleArtist + "\" \"" + singleYear + "\" \"" + singleIndex + "\"";
+		std::string extractCommand = "./scripts/extract_audio.py " + extractArguments;
+		std::cout << extractCommand << std::endl;
 	}
 }
+
+
+
+
+
+
+
 
