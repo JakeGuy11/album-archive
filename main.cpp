@@ -146,9 +146,10 @@ int main(int argc, char **argv)
 		std::string singleArtist = getPrompt("Enter the artist of the single");
 		std::string singleYear = getPrompt("Enter the year of the single");
 		std::string singleIndex = getPrompt("Enter the index of this song in the single if it is not the only song, otherwise leave it blank");
+		if (singleIndex == "") singleIndex = "1";
 
 		// Make the directory if it does not exist
-		std::string mkdirCommand = "mkdir -p " + replaceString (singlePath, " ", "\\ ");
+		std::string mkdirCommand = "mkdir -p " + replaceString (singlePath, " ", "\\ ") + " 2> /dev/null";
 		system(mkdirCommand.c_str());
 
 		// Download the cover here
@@ -156,13 +157,13 @@ int main(int argc, char **argv)
 		std::string coverCommand;
 		if (!customCover) coverURL = getPrompt ("Enter the url of the cover image");
 		if (customCover) coverCommand = "cp " + replaceString(customCoverLocation, " ", "\\ ") + " " + replaceString(singlePath, " ", "\\ ") + "/cover";
-		else coverCommand = "curl \"" + coverURL + "\" --create-dirs -o " + replaceString(singlePath, " ", "\\ ") + "/cover";
+		else coverCommand = "curl \"" + coverURL + "\" --create-dirs -o " + replaceString(singlePath, " ", "\\ ") + "/cover 2> /dev/null";
 		system(coverCommand.c_str());
 	
 		//Generate and execute the extraction command
 		std::string extractArguments = "\"" + videoURL + "\" \"" + singlePath + "\" \"" + singleTitle + "\" \"" + singleName + "\" \"" + singleArtist + "\" \"" + singleYear + "\" \"" + singleIndex + "\"";
-		std::string extractCommand = "./scripts/extract_audio.py " + extractArguments;
-		std::cout << extractCommand << std::endl;
+		std::string extractCommand = "./scripts/extract_audio.py " + extractArguments + " 2> /dev/null";
+		system(extractCommand.c_str());
 	}
 }
 
