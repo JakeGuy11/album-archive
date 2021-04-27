@@ -131,6 +131,7 @@ int main(int argc, char **argv)
 
 		std::string removeCoverCommand = "rm " + replaceString(pathToSave, " ", "\\ ") + "/cover";	
 		system(removeCoverCommand.c_str());
+		
 		return 0;
 	}
 	
@@ -164,6 +165,12 @@ int main(int argc, char **argv)
 		std::string extractArguments = "\"" + videoURL + "\" \"" + singlePath + "\" \"" + singleTitle + "\" \"" + singleName + "\" \"" + singleArtist + "\" \"" + singleYear + "\" \"" + singleIndex + "\"";
 		std::string extractCommand = "./scripts/extract_audio.py " + extractArguments + " 2> /dev/null";
 		system(extractCommand.c_str());
+		
+		//Remove the cover
+		std::string removeCoverCommand = "rm " + replaceString (singlePath, " ", "\\ ") + "/cover";
+		system(removeCoverCommand.c_str());
+
+		return 0;
 	}
 }
 
