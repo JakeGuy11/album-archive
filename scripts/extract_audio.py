@@ -11,6 +11,7 @@ requested_album = sys.argv[4]
 requested_artist = sys.argv[5]
 requested_year = sys.argv[6]
 requested_tracknum = sys.argv[7]
+requested_disk = sys.argv[8]
 
 requested_url = sys.argv[1]
 
@@ -20,10 +21,17 @@ dl_opts = {
     'outtmpl': requested_path + "/currentitem"
 }
 
-with youtube_dl.YoutubeDL(dl_opts) as ydl:
-    ydl.download([requested_url])
+if "youtube.com" in requested_url:
+	with youtube_dl.YoutubeDL(dl_opts) as ydl:
+		ydl.download([requested_url])
+else:
+    copy_command = "cp \"" + os.path.expanduser(requested_url) + "\" \"" + os.path.expanduser(requested_path) + "\""
+    file_name = os.path.expanduser(requested_url).split("/")[-1]
+    move_command = "mv \"" + os.path.expanduser(requested_path) + "/" + file_name + "\" \"" + os.path.expanduser(requested_path) + "/currentitem\""
+    os.system(copy_command)
+    os.system(move_command)
 
-metadata_commands = "-metadata title=\"" + requested_title + "\" -metadata album=\"" + requested_album + "\" -metadata artist=\"" + requested_artist + "\" -metadata date=\"" + requested_year + "\" -metadata track=\"" + requested_tracknum + "\""
+metadata_commands = "-metadata title=\"" + requested_title + "\" -metadata album=\"" + requested_album + "\" -metadata artist=\"" + requested_artist + "\" -metadata date=\"" + requested_year + "\" -metadata track=\"" + requested_tracknum + "\" -metadata disc=\"" + requested_disk + "\""
 
 save_name = requested_path.replace(" ", "\ ").replace("(", "\(").replace(")", "\)").replace("'", "\\'").replace("\"", "\\\"") + "/" + requested_title.replace(" ", "\ ").replace("(", "\(").replace(")", "\)").replace("'", "\\'").replace("\"", "\\\"") + ".mp3"
 

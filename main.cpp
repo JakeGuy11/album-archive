@@ -17,7 +17,10 @@ bool customCover = false;
 std::string customCoverLocation = "";
 // Here is the intent: by default, it's to download the album. The user can pass flags that will change it
 std::string intent = "album";
-
+// This is in case the user wants to include the disk number
+std::string diskNum = "1";
+// Run the program with debug?
+bool verbose = false;
 
 std::string replaceString(std::string subject,const std::string& search,const std::string& replace)
 {
@@ -87,6 +90,14 @@ int main(int argc, char **argv)
 			intent = "single";
 			std::cout << "Mode set to single." << std::endl;
 		}
+		else if (std::string (argv[i]) == "-d" || std::string (argv[i]) == "--disk")
+		{
+			diskNum = std::string (argv[i+1]);
+		}
+		else if (std::string (argv[i]) == "-v" || std::string (argv[i]) == "--verbose")
+		{
+			verbose = true;
+		}
 	}
 	
 
@@ -94,7 +105,7 @@ int main(int argc, char **argv)
 	{
 		std::string playlistURL = std::string(argv[argc-1]);
 
-		std::string indexCountCommand = "./scripts/parse_youtube_playlist.js \"" + playlistURL + "\"";
+		std::string indexCountCommand = "/opt/albumarchive/scripts/parse_youtube_playlist.js \"" + playlistURL + "\"";
 		
 		std::string firstCommandOutput = getCommandOutput(indexCountCommand.c_str());
 		std::vector<std::string> firstCommandOutputVector = splitIntoStrings(firstCommandOutput, ";;", 4);
@@ -117,14 +128,14 @@ int main(int argc, char **argv)
 		for(int i = 0; i < numberOfVideos; i++)
 		{
 			std::cout << std::endl;
-			std::string currentCommand = "./scripts/return_playlist_details.js \"" + playlistURL + "\" " + std::to_string(i);
+			std::string currentCommand = "/opt/albumarchive/scripts/return_playlist_details.js \"" + playlistURL + "\" " + std::to_string(i);
 			std::string commandOutput = getCommandOutput(currentCommand.c_str());
 			std::vector<std::string> commandOutputVector = splitIntoStrings(commandOutput, ";;", 2);
 			
 			std::string chosenTitle = getPrompt("The current video title is " + commandOutputVector[1] + ", would you like to change it? Leave blank for no, or enter its new name.");
 			if (chosenTitle == "") chosenTitle = commandOutputVector[1];
 			
-			std::string downloadCommand = "./scripts/extract_audio.py \"" + commandOutputVector[0] + "\" \"" + pathToSave + "\" \"" + chosenTitle + "\" \"" + albumName + "\" \"" + albumArtist + "\" \"" + albumYear + "\" " + std::to_string(i+1);
+			std::string downloadCommand = "/opt/albumarchive/scripts/extract_audio.py \"https://www.youtube.com/watch?v=" + commandOutputVector[0] + "\" \"" + pathToSave + "\" \"" + chosenTitle + "\" \"" + albumName + "\" \"" + albumArtist + "\" \"" + albumYear + "\" " + std::to_string(i+1);
 			system(downloadCommand.c_str());
 			std::cout << "Finished downloading " << chosenTitle << std::endl;
 		}
@@ -162,8 +173,11 @@ int main(int argc, char **argv)
 		system(coverCommand.c_str());
 	
 		//Generate and execute the extraction command
-		std::string extractArguments = "\"" + videoURL + "\" \"" + singlePath + "\" \"" + singleTitle + "\" \"" + singleName + "\" \"" + singleArtist + "\" \"" + singleYear + "\" \"" + singleIndex + "\"";
-		std::string extractCommand = "./scripts/extract_audio.py " + extractArguments + " 2> /dev/null";
+		std::string extractArguments = "\"" + videoURL + "\" \"" + singlePath + "\" \"" + singleTitle + "\" \"" + singleName + "\" \"" + singleArtist + "\" \"" + singleYear + "\" \"" + singleIndex + "\" \"" + diskNum + "\"";
+		std::string extractCommand = "";
+		if (verbose)  extractCommand = "/opt/albumarchive/scripts/extract_audio.py " + extractArguments;
+		else extractCommand = "/opt/albumarchive/scripts/extract_audio.py " + extractArguments + " 2> /dev/null";
+		if (verbose) std::cout << "Extraction command: " << extractCommand << std::endl;
 		system(extractCommand.c_str());
 		
 		//Remove the cover
