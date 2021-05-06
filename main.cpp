@@ -12,6 +12,8 @@
 #include <vector>
 #include <string>
 #include <cstring>
+#include<filesystem>
+#include<fstream>
 // Here are some things we'll need globally
 bool customCover = false;
 std::string customCoverLocation = "";
@@ -94,6 +96,11 @@ int main(int argc, char **argv)
 		{
 			diskNum = std::string (argv[i+1]);
 		}
+		else if (std::string (argv[i]) == "-f" || std::string (argv[i]) == "--dir")
+		{
+			intent = "dir";
+			std::cout << "Mode set to directory." << std::endl;
+		}
 		else if (std::string (argv[i]) == "-v" || std::string (argv[i]) == "--verbose")
 		{
 			verbose = true;
@@ -145,8 +152,7 @@ int main(int argc, char **argv)
 		
 		return 0;
 	}
-	
-	if (intent == "single")
+	else if (intent == "single")
 	{
 		std::string videoURL = std::string(argv[argc-1]);
 
@@ -185,6 +191,57 @@ int main(int argc, char **argv)
 		system(removeCoverCommand.c_str());
 
 		return 0;
+	}
+	else if (intent == "dir")
+	{
+		std::string dirPath = std::string (argv[argc-1]);
+
+		// Get all the user arguments
+		std::string albumName = getPrompt ("Enter the name of the album");
+		std::string savePath = "~/Music/" + getPrompt ("Enter the path, relative to ~/Music/, you would like to save the album");
+		std::string albumArtist = getPrompt ("Enter the name of the artist");
+		std::string albumYear = getPrompt ("Enter the year of the album");
+		std::string naturalIndexString = getPrompt ("Are the songs in order naturally? (y/N)");
+		while (naturalIndexString != "y" && naturalIndexString != "n" && naturalIndexString != "Y" && naturalIndexString != "N") naturalIndexString = getPrompt ("Input not recognized. Are the songs in order naturally? (y/N)");
+		bool naturalIndex = false;
+		if (naturalIndexString == "y" || naturalIndexString == "Y") naturalIndex = true;
+
+		// Make the folder if it does not exist
+		std::string mkdirCommand = "mkdir -p " + replaceString (savePath, " ", "\\ ");
+		system (mkdirCommand.c_str());
+
+		// Download the cover
+		std::string coverURL;
+		std::string coverCommand;
+		if (!customCover) coverURL = getPrompt ("Enter the url of the cover image");
+		if (customCover) coverCommand = "cp " + replaceString (customCoverLocation, " ", "\\ ") + " " + replaceString (savePath, " ", "\\ ") + "/cover";
+		else coverCommand = "curl \"" + coverURL + "\" --create-dirs -o " + replaceString (savePath, " ", "\\ ") + "/cover 2> /dev/null";
+		system (coverCommand.c_str());
+
+		int songIndex = 1;
+		for (const auto & file : std::filesystem::directory_iterator(dirPath))
+		{
+			std::cout << "\nOn song " << file.path()  << std::endl;
+			
+			// Get user input
+			std::string songTitle = getPrompt ("Enter the title of the song (or enter \"_PASS\" to skip this file)");
+			if (songTitle == "_PASS") continue;
+			std::string currentIndex = std::to_string(songIndex);
+			if (!naturalIndex) currentIndex = getPrompt ("Enter the index of the current song");
+			
+			// Generate the extraction command
+			std::string extractArguments = "\"" + std::string(file.path()) + "\" \"" + savePath + "\" \"" + songTitle + "\" \"" + albumName + "\" \"" + albumArtist + "\" \"" + albumYear + "\" \"" + currentIndex + "\" \"" + diskNum + "\"";
+			std::string extractCommand = "/opt/albumarchive/scripts/extract_audio.py " + extractArguments;
+			if (verbose) std::cout << extractCommand << std::endl;
+			else extractCommand += " 2> /dev/null";
+			system (extractCommand.c_str());
+
+			songIndex++;
+		}
+
+		// Remove the cover
+		std::string removeCoverCommand = "rm " + replaceString (savePath, " ", "\\ ") + "/cover";
+		system (removeCoverCommand.c_str());
 	}
 }
 
